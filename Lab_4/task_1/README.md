@@ -1,73 +1,175 @@
-# React + TypeScript + Vite
+# Task 1 — Registration Form with Validation
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Форма регистрации пользователя с валидацией полей в реальном времени, реализованная с использованием React и TypeScript.
 
-Currently, two official plugins are available:
+## Описание
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Компонент `RegistrationForm` демонстрирует:
+- Работу с несколькими полями формы
+- Валидацию в реальном времени
+- Типизацию состояния в TypeScript
+- Обработку submit события
+- Контролируемые компоненты
 
-## React Compiler
+## Компоненты
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### RegistrationForm (`src/components/RegistrationForm.tsx`)
 
-## Expanding the ESLint configuration
+Главный компонент формы со следующим функционалом:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+**Поля формы:**
+- `name` — имя пользователя (string)
+- `email` — электронная почта (string)
+- `age` — возраст (number | undefined)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+**Валидация:**
+- **Имя:** минимум 3 символа, обязательное поле
+- **Email:** валидный формат email адреса
+- **Возраст:** число ≥ 18
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+**Состояния:**
+- Значения полей (name, email, age)
+- Ошибки валидации для каждого поля
+- Флаг успешной регистрации
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## TypeScript типизация
+
+```typescript
+const [name, setName] = useState<string>("");
+const [email, setEmail] = useState<string>("");
+const [age, setAge] = useState<number | undefined>(undefined);
+
+const [nameError, setNameError] = useState<string>("");
+const [emailError, setEmailError] = useState<string>("");
+const [ageError, setAgeError] = useState<string>("");
+
+const [success, setSuccess] = useState<boolean>(false);
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Функции валидации
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### validateName
+```typescript
+const validateName = (val: string): string => {
+  if (!val) return "Name is required";
+  if (val.length < 3) return "Name must be at least 3 characters";
+  return "";
+};
 ```
+
+### validateEmail
+```typescript
+const validateEmail = (val: string): string => {
+  if (!val) return "Email is required";
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(val)) return "Email is not valid";
+  return "";
+};
+```
+
+### validateAge
+```typescript
+const validateAge = (val: number | undefined): string => {
+  if (val === undefined) return "Age is required";
+  const numAge = Number(val);
+  if (Number.isNaN(numAge) || numAge < 18) 
+    return "Age must be a number and at least 18";
+  return "";
+};
+```
+
+## Обработка событий
+
+### onChange с валидацией
+```typescript
+onChange={(e) => {
+  const val = e.target.value;
+  setName(val);
+  setNameError(validateName(val));
+}}
+```
+
+### onSubmit
+```typescript
+const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  const nErr = validateName(name);
+  const eErr = validateEmail(email);
+  const aErr = validateAge(age);
+
+  setNameError(nErr);
+  setEmailError(eErr);
+  setAgeError(aErr);
+
+  if (!nErr && !eErr && !aErr) {
+    setSuccess(true);
+    // Сброс формы
+    setName("");
+    setEmail("");
+    setAge(undefined);
+  } else {
+    setSuccess(false);
+  }
+};
+```
+
+## Установка и запуск
+
+```bash
+# Установка зависимостей
+pnpm install
+
+# Запуск dev сервера
+pnpm dev
+
+# Сборка для production
+pnpm build
+```
+
+## Ключевые концепции
+
+- **TypeScript типизация состояния**  
+- **Контролируемые компоненты** (controlled components)  
+- **Валидация форм в реальном времени**  
+- **Обработка событий с типизацией**  
+- **Управление несколькими состояниями**  
+- **Условный рендеринг сообщений об ошибках**
+
+## Типы событий в React + TypeScript
+
+```typescript
+// Form submit
+React.FormEvent<HTMLFormElement>
+
+// Input change
+React.ChangeEvent<HTMLInputElement>
+
+// Button click
+React.MouseEvent<HTMLButtonElement>
+```
+
+## Паттерн Controlled Components
+
+```typescript
+<input
+  type="text"
+  value={name}  // Значение контролируется состоянием
+  onChange={(e) => setName(e.target.value)}  // Обновление состояния
+/>
+```
+
+## Технологии
+
+- React 18
+- TypeScript
+- Vite
+- ESLint
+
+## Расширения
+
+Возможные улучшения:
+- Добавить валидацию пароля
+- Реализовать дебаунсинг валидации
+- Добавить кастомные хуки для форм
+- Интегрировать библиотеку форм (React Hook Form, Formik)
