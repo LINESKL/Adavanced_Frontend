@@ -3,7 +3,7 @@ import { useState } from "react";
 const RegistrationForm = () => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
-    const [age, setAge] = useState();
+    const [age, setAge] = useState<number | undefined>(undefined);
 
     const [nameError, setNameError] = useState("");
     const [emailError, setEmailError] = useState("");
@@ -11,27 +11,27 @@ const RegistrationForm = () => {
 
     const [success, setSuccess] = useState(false);
 
-    const validateName = (val) => {
+    const validateName = (val: string) => {
         if (!val) return "Name is required";
         if (val.length < 3) return "Name must be at least 3 characters";
         return "";
     };
 
-    const validateEmail = (val) => {
+    const validateEmail = (val: string) => {
         if (!val) return "Email is required";
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(val)) return "Email is not valid";
         return "";
     };
 
-    const validateAge = (val) => {
-        if (!val) return "Age is required";
+    const validateAge = (val: number | undefined) => {
+        if (val === undefined) return "Age is required";
         const numAge = Number(val);
-        if (isNaN(numAge) || numAge < 18) return "Age must be a number and at least 18";
+        if (Number.isNaN(numAge) || numAge < 18) return "Age must be a number and at least 18";
         return "";
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         const nErr = validateName(name);
@@ -47,7 +47,7 @@ const RegistrationForm = () => {
 
             setName("");
             setEmail("");
-            setAge();
+            setAge(undefined);
         } else {
             setSuccess(false);
         }
@@ -88,8 +88,8 @@ const RegistrationForm = () => {
                         value={age || ""}
                         onChange={(e) => {
                             const val = e.target.value;
-                            setAge(val);
-                            setAgeError(validateAge(val));
+                            setAge(val ? Number(val) : undefined);
+                            setAgeError(validateAge(val ? Number(val) : undefined));
                         }}
                     />
                     {ageError && <div style={{ color: "red" }}>{ageError}</div>}
